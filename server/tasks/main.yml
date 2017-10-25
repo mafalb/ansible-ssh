@@ -1,0 +1,15 @@
+---
+
+- name: openssh server package
+  package:
+    name: openssh-server
+    state: present
+
+- name: sshd config
+  copy:
+    src: "{{ playbook_dir }}/files/{{ cfg }}"
+    dest: /etc/ssh/sshd_config
+    backup: yes
+    validate: sshd -T -f %s
+  notify: reload sshd
+  when: cfg is defined

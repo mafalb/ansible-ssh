@@ -1,9 +1,15 @@
 ---
 
-- name: user exists
+- name: group exists for {{ login }}
+  group:
+    name: "{{ login }}"
+    gid: "{{ uid }}"
+
+- name: user exists for {{ login }}
   user:
     name: "{{ login }}"
     uid: "{{ uid }}"
+    group: "{{ login }}"
     createhome: no
     shell: /sbin/nologin
 
@@ -57,6 +63,13 @@
     owner: root
     group: "{{ login }}"
     mode: 0750
+
+- name: authorized_keys for {{ login }} exists
+  file:
+    path: /home/{{ login }}/.ssh/authorized_keys
+    owner: root
+    group: "{{ login }}"
+    mode: 0640
 
 - name: authorized_keys for {{ login }}
   authorized_key:

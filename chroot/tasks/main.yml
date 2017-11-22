@@ -1,0 +1,67 @@
+---
+
+- name: user exists
+  user:
+    name: "{{ login }}"
+    uid: "{{ uid }}"
+    createhome: no
+    shell: /sbin/nologin
+
+- name: Home directory exists for {{ login }}
+  file:
+    path: /home/{{ login }}
+    state: directory
+    mode: 0750
+    owner: root
+    group: "{{ login }}"
+
+- name: Transfer Directories exists for {{ login }}
+  file:
+    path: /home/{{ login }}/{{ item }}
+    state: directory
+    mode: 0750
+    owner: "{{ login }}"
+    group: "{{ login }}"
+  with_items: "{{ transfer_dirs }}"
+    
+- name: /etc for {{ login }}
+  file:
+    path: /home/{{ login }}/etc
+    state: directory
+    mode: 0750
+    owner: root
+    group: "{{ login }}"
+
+- name: /etc/group for {{ login }}
+  template:
+    dest: /home/{{ login }}/etc/group
+    src: "{{ playbook_dir }}/templates/chroot-group.j2"
+    mode: 0640
+    owner: root
+    group: "{{ login }}"
+    backup: yes
+
+- name: /etc/passwd for {{ login }}
+  template:
+    dest: /home/{{ login }}/etc/passwd
+    src: "{{ playbook_dir }}/templates/chroot-passwd.j2"
+    mode: 0640
+    owner: root
+    group: "{{ login }}"
+    backup: yes
+
+- name: .ssh for {{ login }}
+  file:
+    path: /home/{{ login }}/.ssh
+    state: directory
+    owner: root
+    group: "{{ login }}"
+    mode: 0750
+
+- name: authorized_keys for {{ login }}
+  authorized_key:
+    user: "{{ login }}"
+    state: present
+    key: "{{ item }}"
+    manage_dir: no
+  with_items: "{{ authorized_keys }}"

@@ -63,13 +63,25 @@
     owner: root
     group: "{{ login }}"
     mode: 0750
+    setype: ssh_home_t
 
 - name: authorized_keys for {{ login }} exists
+  copy:
+    force: no
+    content: ""
+    dest: /home/{{ login }}/.ssh/authorized_keys
+    owner: root
+    group: "{{ login }}"
+    mode: 0640
+    setype: ssh_home_t
+
+- name: authorized_keys for {{ login }} has correct permissions
   file:
     path: /home/{{ login }}/.ssh/authorized_keys
     owner: root
     group: "{{ login }}"
     mode: 0640
+    setype: ssh_home_t
 
 - name: authorized_keys for {{ login }}
   authorized_key:

@@ -15,7 +15,7 @@
 
 - name: Home directory exists for {{ login }}
   file:
-    path: /home/{{ login }}
+    path: "{{ homedir_path }}/{{ login }}"
     state: directory
     mode: 0750
     owner: root
@@ -23,16 +23,17 @@
 
 - name: Transfer Directories exists for {{ login }}
   file:
-    path: /home/{{ login }}/{{ item }}
+    path: "{{ homedir_path }}/{{ login }}/{{ item }}"
     state: directory
     mode: 0750
     owner: "{{ login }}"
     group: "{{ login }}"
   with_items: "{{ transfer_dirs }}"
+  when: transfer_dirs is defined
     
 - name: /etc for {{ login }}
   file:
-    path: /home/{{ login }}/etc
+    path: "{{ homedir_path }}/{{ login }}/etc"
     state: directory
     mode: 0750
     owner: root
@@ -40,25 +41,31 @@
 
 - name: /etc/group for {{ login }}
   template:
-    dest: /home/{{ login }}/etc/group
-    src: "{{ playbook_dir }}/templates/chroot-group.j2"
+    dest: "{{ homedir_path }}/{{ login }}/etc/group"
+    src: "{{ item }}"
     mode: 0640
     owner: root
     group: "{{ login }}"
     backup: yes
+  with_first_found:
+    - "{{ playbook_dir }}/templates/chroot-group.j2"
+    - etc/group.j2
 
 - name: /etc/passwd for {{ login }}
   template:
-    dest: /home/{{ login }}/etc/passwd
-    src: "{{ playbook_dir }}/templates/chroot-passwd.j2"
+    dest: "{{ homedir_path }}/{{ login }}/etc/passwd"
+    src: "{{ item }}"
     mode: 0640
     owner: root
     group: "{{ login }}"
     backup: yes
+  with_first_found:
+    - "{{ playbook_dir }}/templates/chroot-passwd.j2"
+    - etc/passwd.j2
 
 - name: .ssh for {{ login }}
   file:
-    path: /home/{{ login }}/.ssh
+    path: "{{ homedir_path }}/{{ login }}/.ssh"
     state: directory
     owner: root
     group: "{{ login }}"
@@ -69,7 +76,7 @@
   copy:
     force: no
     content: ""
-    dest: /home/{{ login }}/.ssh/authorized_keys
+    dest: "{{ homedir_path }}/{{ login }}/.ssh/authorized_keys"
     owner: root
     group: "{{ login }}"
     mode: 0640
@@ -77,7 +84,7 @@
 
 - name: authorized_keys for {{ login }} has correct permissions
   file:
-    path: /home/{{ login }}/.ssh/authorized_keys
+    path: "{{ homedir_path }}/{{ login }}/.ssh/authorized_keys"
     owner: root
     group: "{{ login }}"
     mode: 0640

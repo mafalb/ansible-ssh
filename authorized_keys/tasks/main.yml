@@ -1,0 +1,21 @@
+---
+
+- name: .ssh for {{ login }}
+  file:
+    path: "{{ homedir }}/.ssh"
+    state: directory
+    owner: root
+    group: "{{ login }}"
+    mode: 0750
+    setype: ssh_home_t
+
+- name: authorized_keys for {{ login }} exists
+  lineinfile:
+    line: "{{ item }}"
+    path: "{{ homedir }}/.ssh/authorized_keys"
+    create: yes
+    owner: root
+    group: "{{ login }}"
+    mode: 00640
+    setype: ssh_home_t
+  with_items: "{{ authorized_keys }}"

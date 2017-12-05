@@ -6,10 +6,13 @@
     state: present
 
 - name: sshd config
-  copy:
-    src: "{{ playbook_dir }}/files/{{ cfg }}"
+  template:
+    src: "{{ item }}"
     dest: /etc/ssh/sshd_config
     backup: yes
     validate: sshd -T -f %s
+  with_first_found:
+    - "{{ playbook_dir }}/files/{{ cfg }}"
+    - "{{ playbook_dir }}/templates/{{ cfg }}"
+    - sshd_config.j2
   notify: reload sshd
-  when: cfg is defined

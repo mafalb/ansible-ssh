@@ -12,7 +12,6 @@
     backup: yes
     validate: sshd -T -f %s
   with_first_found:
-    - "{{ playbook_dir }}/files/{{ cfg }}"
     - "{{ playbook_dir }}/templates/{{ cfg }}"
     - sshd_config.j2
   notify: reload sshd

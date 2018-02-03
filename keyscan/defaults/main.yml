@@ -3,5 +3,4 @@
 ssh:
   keyscan:
     origin_host: "{{ ansible_host }}"
-    keytype: rsa,ecdsa,ed25519
     known_hosts: ~/.ssh/known_hosts_ansible

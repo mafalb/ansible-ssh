@@ -5,38 +5,34 @@
     that: ssh.keyscan.keytype is defined
     msg: no keytype is specified
 
-- name: ssh.keyscan.keytype
-  tags: debug
-  debug: var=ssh.keyscan.keytype
+- name: input file for ssh-keyscan
+  delegate_to: localhost
+  template:
+    src: ssh-keyscan.j2
+    dest: "{{ playbook_dir }}/files/ssh/{{ inventory_hostname }}.keyscan"
 
-- name: _ssh_keys
-  tags: debug
-  debug: var=_ssh_keys
-
-- name: get {{ ssh.keyscan.keytype }} keys for {{ ansible_host }}
-  command: ssh-keyscan -t {{ ssh.keyscan.keytype }} -p {{ ansible_port|default('22') }} {{ ansible_host }}
-  delegate_to: "{{ ssh.keyscan.bastion|default('localhost') }}"
+- name: get {{ ssh.keyscan.keytype }} key
+  command: ssh-keyscan -t {{ ssh.keyscan.keytype }} -p {{ ansible_port|default('22') }} -f {{ playbook_dir }}/files/ssh/{{ inventory_hostname }}.keyscan
+  delegate_to: localhost
   register: _ssh_keys
   check_mode: no
   changed_when: no
-  tags:
-    - always
 
 - name: check if key(s) is present
-  command: grep -q '{{ ansible_host }} (.+){{ ssh.keyscan.keytype }} ' {{ ssh.keyscan.known_hosts }}
+  command: grep -Eq '{{ inventory_hostname }}(.+){{ ssh.keyscan.keytype }} ' {{ ssh.keyscan.known_hosts }}
   delegate_to: localhost
   register: _ssh_key_is_present
   failed_when: no
   check_mode: no
   changed_when: no
-  tags:
-    - always
 
-- lineinfile:
+- name: put keys into known_hosts
+  delegate_to: localhost
+  lineinfile:
     line: "{{ item }}"
     path: "{{ ssh.keyscan.known_hosts }}"
-    regexp: "^{{ ssh.keyscan.keyscan.origin_host }} (.*){{ ssh.keyscan.keyscan.keytype }}"
-  delegate_to: localhost
+    regexp: "{{ inventory_hostname }}(.+){{ ssh.keyscan.keytype }}"
+    create: yes
   with_items: "{{ _ssh_keys.stdout_lines }}"
   when:
     - 'item | search(ssh.keyscan.keytype)'

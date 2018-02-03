@@ -1,0 +1,43 @@
+---
+
+- name: a keytype is specified
+  assert:
+    that: ssh.keyscan.keytype is defined
+    msg: no keytype is specified
+
+- name: ssh.keyscan.keytype
+  tags: debug
+  debug: var=ssh.keyscan.keytype
+
+- name: _ssh_keys
+  tags: debug
+  debug: var=_ssh_keys
+
+- name: get {{ ssh.keyscan.keytype }} keys for {{ ansible_host }}
+  command: ssh-keyscan -t {{ ssh.keyscan.keytype }} -p {{ ansible_port|default('22') }} {{ ansible_host }}
+  delegate_to: "{{ ssh.keyscan.bastion|default('localhost') }}"
+  register: _ssh_keys
+  check_mode: no
+  changed_when: no
+  tags:
+    - always
+
+- name: check if key(s) is present
+  command: grep -q '{{ ansible_host }} (.+){{ ssh.keyscan.keytype }} ' {{ ssh.keyscan.known_hosts }}
+  delegate_to: localhost
+  register: _ssh_key_is_present
+  failed_when: no
+  check_mode: no
+  changed_when: no
+  tags:
+    - always
+
+- lineinfile:
+    line: "{{ item }}"
+    path: "{{ ssh.keyscan.known_hosts }}"
+    regexp: "^{{ ssh.keyscan.keyscan.origin_host }} (.*){{ ssh.keyscan.keyscan.keytype }}"
+  delegate_to: localhost
+  with_items: "{{ _ssh_keys.stdout_lines }}"
+  when:
+    - 'item | search(ssh.keyscan.keytype)'
+    - "_ssh_key_is_present.rc == 1"

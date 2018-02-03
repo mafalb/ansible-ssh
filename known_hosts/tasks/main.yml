@@ -1,0 +1,21 @@
+---
+
+- name: check if key(s) is present
+  command: grep -Eq '{{ inventory_hostname }}(.+){{ ssh.known_hosts.keytype }} ' {{ ssh.known_hosts.path }}
+  delegate_to: localhost
+  register: _ssh_key_is_present
+  failed_when: no
+  check_mode: no
+  changed_when: no
+
+- name: put keys into known_hosts
+  delegate_to: localhost
+  lineinfile:
+    line: "{{ item }}"
+    path: "{{ ssh.known_hosts.path }}"
+    regexp: "^{{ inventory_hostname }}(.*) (.*){{ ssh.known_hosts.keytype }}"
+    create: yes
+  with_items: "{{ _ssh_keys.stdout_lines }}"
+  when:
+    - "item | regex_search('^' + inventory_hostname + '(.*) (.*)' + ssh.known_hosts.keytype )"
+    - "_ssh_key_is_present.rc > 0"

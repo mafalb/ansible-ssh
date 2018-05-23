@@ -1,0 +1,6 @@
+---
+
+ssh:
+  keyscan:
+    origin_host: "{{ ansible_host }}"
+    known_hosts: ~/.ssh/known_hosts_ansible

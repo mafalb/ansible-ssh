@@ -1,0 +1,14 @@
+---
+
+- name: input file for ssh-keyscan
+  delegate_to: localhost
+  template:
+    src: ssh-keyscan.j2
+    dest: "{{ playbook_dir }}/files/ssh/{{ inventory_hostname }}.keyscan"
+
+- name: get host key(s)
+  command: ssh-keyscan -p {{ ansible_port|default('22') }} -f {{ playbook_dir }}/files/ssh/{{ inventory_hostname }}.keyscan
+  delegate_to: localhost
+  register: _ssh_keys
+  check_mode: no
+  changed_when: no

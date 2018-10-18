@@ -5,3 +5,5 @@ ssh:
   known_hosts:
     managed: false
     context: User
+    patterns:
+      - "{{ ansible_host|default(inventory_hostname) }}"

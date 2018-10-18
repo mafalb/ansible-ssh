@@ -11,23 +11,41 @@
     that:
       - ssh.known_hosts.context in [ "Global", "User" ]
 
-- name: file does exist
-  copy:
-    content: ""
-    dest: "{{ ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + 'KnownHostsFile']) }}"
-    force: false
+- debug: var=ansible_connection
+  tags:
+    - never
+    - debug
 
-- name: get host keys
-  with_items: "{{ ssh_pattern }}"
-  known_hosts:
-    path: "{{ ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + 'KnownHostsFile']) }}"
-    name: "{{ item }}"
-    key: "{{ lookup('pipe', 'ssh-keyscan ' + item) }}"
+- set_fact:
+    _original_ansible_connection: "{{ ansible_connection }}"
 
-- name: remove host keys
-  when: ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + 'KnownHostsFile'])
-  with_items: "{{ ssh_pattern }}"
-  lineinfile:
-    path: "{{ ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + 'KnownHostsFile']) }}"
-    regexp: ',{{ item }}|{{ item }},'
-    state: absent
+- block:
+
+  - debug: var=_original_ansible_connection
+    tags:
+      - never
+      - debug
+
+  - name: file does exist
+    copy:
+      content: ""
+      dest: "{{ ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + 'KnownHostsFile']) }}"
+      force: false
+  
+  - name: get host keys
+    with_items: "{{ ssh.known_hosts.patterns }}"
+    known_hosts:
+      path: "{{ ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + 'KnownHostsFile']) }}"
+      name: "{{ item }}"
+      key: "{{ lookup('pipe', 'ssh-keyscan ' + ansible_ssh_common_args|default('') + item) }}"
+
+  - name: remove host keys
+    when: ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + 'KnownHostsFile'])
+    with_items: "{{ ssh.known_hosts.patterns }}"
+    lineinfile:
+      path: "{{ ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + 'KnownHostsFile']) }}"
+      regexp: ',{{ item }}|{{ item }},'
+      state: absent
+
+  when: _original_ansible_connection in ["ssh","paramiko_ssh","netconf_cli"]
+  delegate_to: localhost

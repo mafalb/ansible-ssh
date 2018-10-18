@@ -3,20 +3,20 @@
 
 - name: file does exist
   file:
-    path: "{{ ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + 'KnownHostsFile']) }}"
+    path: "{{ ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + '.KnownHostsFile']) }}"
     state: file
 
 - name: get host keys
   with_items: "{{ ssh_pattern }}"
   known_hosts:
-    path: "{{ ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + 'KnownHostsFile']) }}"
+    path: "{{ ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + '.KnownHostsFile']) }}"
     name: "{{ item }}"
     key: "{{ lookup('pipe', 'ssh-keyscan ' + item) }}"
 
 - name: remove host keys
-  when: ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + 'KnownHostsFile'])
+  when: ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + '.KnownHostsFile'])
   with_items: "{{ ssh_pattern }}"
   lineinfile:
-    path: "{{ ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + 'KnownHostsFile']) }}"
+    path: "{{ ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + '.KnownHostsFile']) }}"
     regexp: ',{{ item }}|{{ item }},'
     state: absent

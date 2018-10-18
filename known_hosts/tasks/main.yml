@@ -1,15 +1,21 @@
 #! vim: set ft=yaml ts=2:
 ---
 
+- debug: var=ssh
+  tags:
+    - never
+    - debug
+
 - name: assertions
   assert:
     that:
-      - ssh.config.context in [ "Global", "User" ]
+      - ssh.known_hosts.context in [ "Global", "User" ]
 
 - name: file does exist
-  file:
-    path: "{{ ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + 'KnownHostsFile']) }}"
-    state: file
+  copy:
+    content: ""
+    dest: "{{ ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + 'KnownHostsFile']) }}"
+    force: false
 
 - name: get host keys
   with_items: "{{ ssh_pattern }}"

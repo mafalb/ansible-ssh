@@ -4,3 +4,4 @@
 ssh:
   config:
     GlobalKnownHostsFile: /etc/ssh/ssh_known_hosts
+    UserKnownHostsFile: ~/.ssh/known_hosts

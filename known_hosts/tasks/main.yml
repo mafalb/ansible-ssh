@@ -1,21 +1,22 @@
+#! vim: set ft=yaml ts=2:
 ---
 
-- name: check if key(s) is present
-  command: grep -Eq '{{ inventory_hostname }}(.+){{ ssh.known_hosts.keytype }} ' {{ ssh.known_hosts.path }}
-  delegate_to: localhost
-  register: _ssh_key_is_present
-  failed_when: no
-  check_mode: no
-  changed_when: no
+- name: file does exist
+  file:
+    path: "{{ ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + 'KnownHostsFile']) }}"
+    state: file
 
-- name: put keys into known_hosts
-  delegate_to: localhost
+- name: get host keys
+  with_items: "{{ ssh_pattern }}"
+  known_hosts:
+    path: "{{ ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + 'KnownHostsFile']) }}"
+    name: "{{ item }}"
+    key: "{{ lookup('pipe', 'ssh-keyscan ' + item) }}"
+
+- name: remove host keys
+  when: ssh_known_hosts_file|default(ssh.config[ssh.known_hosts.context + 'KnownHostsFile']))
+  with_items: "{{ ssh_pattern }}"
   lineinfile:
-    line: "{{ item }}"
-    path: "{{ ssh.known_hosts.path }}"
-    regexp: "^{{ inventory_hostname }}(.*) (.*){{ ssh.known_hosts.keytype }}"
-    create: yes
-  with_items: "{{ _ssh_keys.stdout_lines }}"
-  when:
-    - "item | regex_search('^' + inventory_hostname + '(.*) (.*)' + ssh.known_hosts.keytype )"
-    - "_ssh_key_is_present.rc > 0"
+    path: "{{ ssh_known_hosts_file|default(ssh.known_hosts.context + 'KnownHostsFile']) }}"
+    regexp: ',{{ item }}|{{ item }},'
+    state: absent

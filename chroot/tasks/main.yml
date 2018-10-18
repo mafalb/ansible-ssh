@@ -13,6 +13,13 @@
     createhome: no
     shell: /sbin/nologin
 
+- name: user is member of chroot only group
+  when: chroot_group is defined
+  user:
+    name: "{{ login }}"
+    groups:
+      - "{{ chroot_group }}"
+
 - name: Home directory exists for {{ login }}
   file:
     path: "{{ homedir_path }}/{{ login }}"

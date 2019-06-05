@@ -36,8 +36,6 @@ SyslogFacility AUTHPRIV
 
 #LoginGraceTime 2m
 #PermitRootLogin yes
-#PermitRootLogin without-password
-PermitRootLogin no
 #StrictModes yes
 #MaxAuthTries 6
 #MaxSessions 10
@@ -131,8 +129,7 @@ AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
 AcceptEnv XMODIFIERS
 
 # override default of no subsystems
-#Subsystem	sftp	/usr/libexec/openssh/sftp-server
-Subsystem   sftp    internal-sftp
+Subsystem	sftp	/usr/libexec/openssh/sftp-server
 
 # Example of overriding settings on a per-user basis
 #Match User anoncvs
@@ -140,15 +137,3 @@ Subsystem   sftp    internal-sftp
 #	AllowTcpForwarding no
 #	PermitTTY no
 #	ForceCommand cvs server
-
-
-Match Group *,!root,!wheel
-    ChrootDirectory %h
-    ForceCommand internal-sftp -l VERBOSE
-    AllowTcpForwarding no
-    X11Forwarding no
-
-{% if ssh_root_networks is defined %}
-Match Address {{ ssh_root_networks }}
-    PermitRootLogin yes
-{% endif %}

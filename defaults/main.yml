@@ -3,4 +3,5 @@ ssh_sftp_chroot_only: sftp_chroot
 ssh_yesno:
   True: 'yes'
   False: 'no'
+transfer_dirs_mode: 00750
 ...

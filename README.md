@@ -39,3 +39,16 @@ PasswordAuthentication: 'yes'
 ssh_sftp_chroot_group: sftp_chroot
 ```
 The name of a group whose members are forced into a chroot by sftp
+
+```
+transfer_dirs:
+  - me2client
+  - client2me
+```
+if specified 2 subdirectories are created to split incoming from outgoing data.
+
+```
+transfer_dirs_mode: 00750
+```
+the permissions the transfer_dirs should have.
+

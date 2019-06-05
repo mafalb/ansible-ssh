@@ -63,7 +63,7 @@
   file:
     path: "{{ home }}/{{ item }}"
     state: directory
-    mode: 0750
+    mode: "{{ transfer_dirs_mode: 00750 }}"
     owner: "{{ user }}"
     group: "{{ getent_group.keys()[0] }}"
 

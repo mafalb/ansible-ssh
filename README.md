@@ -9,6 +9,18 @@
     - role: ssh/sftp_user
       user: mafalb_test2
 ```
+```
+```
+- hosts: localhost
+  roles:
+    - role: ssh/server
+    - role: ssh/sftp_user
+      user: mafalb_test2
+      uid: 8001
+      group: blablubb
+      gid: 8001
+```
+
 
 ## Variables
 

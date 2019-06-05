@@ -1,3 +1,5 @@
 ---
-
-sshd_cfg: sshd_config
+ssh_server_config:
+    PasswordAuthentication: 'no'
+    PermitRootLogin: without-password
+...

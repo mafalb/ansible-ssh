@@ -1,17 +1,45 @@
 ---
 
+- name: check config file values
+  assert:
+    that:
+      - ssh_server_config.PasswordAuthentication is string
+      - ssh_server_config.PermitRootLogin is string
+    fail_msg: some config values are not strings
+
+- name: group for sftp chroot users is present
+  group:
+    name: "{{ ssh_sftp_chroot_group }}"
+    state: present
+    system: true
+
 - name: openssh server package
   package:
     name: openssh-server
     state: present
 
 - name: sshd config
+  when: ssh_server_config_file is defined
   template:
-    src: "{{ item }}"
+    src: "{{ playbook_dir }}/{{ ssh_server_config_file }}"
     dest: /etc/ssh/sshd_config
-    backup: yes
+    backup: true
     validate: sshd -T -f %s
-  with_first_found:
-    - "{{ playbook_dir }}/templates/{{ cfg }}"
-    - sshd_config.j2
   notify: reload sshd
+
+- name: sshd config
+  when: not ssh_server_config_file is defined
+  template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    backup: true
+    validate: sshd -T -f %s
+  notify: reload sshd
+
+- name: sshd is started
+  service:
+    name: sshd
+    state: started
+    enabled: true
+
+...

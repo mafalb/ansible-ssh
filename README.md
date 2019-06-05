@@ -10,7 +10,6 @@
       user: mafalb_test2
 ```
 ```
-```
 - hosts: localhost
   roles:
     - role: ssh/server

@@ -1,0 +1,7 @@
+---
+
+uid: null
+gid: null
+group: null
+
+home: "/home/{{ user }}"

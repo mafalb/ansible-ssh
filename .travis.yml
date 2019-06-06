@@ -1,0 +1,32 @@
+---
+sudo: required
+dist: xenial
+language: minimal
+env:
+  global:
+    - ANSIBLE_ROLE_NAME=ssh
+    - CI=travis
+    - ANSIBLE_FORCE_COLOR=1
+  matrix:
+    - targeted_ansible_version: 2.8
+
+before_install:
+  - export ANSIBLE_CI_BRANCH=$TRAVIS_BRANCH CI_BUILD_DIR=$TRAVIS_BUILD_DIR
+  - env
+  - dpkg -l
+  - sudo -H pip install ansible-lint
+  - pip list
+  - docker --version
+  - sudo apt-add-repository --yes ppa:ansible/ansible-${targeted_ansible_version}
+  - sudo apt-get update
+  - sudo apt-get install ansible && sudo mkdir -p /etc/ansible/roles
+  - sudo echo -e "localhost ansible_connection=local\n" | sudo tee /etc/ansible/hosts
+  - ansible localhost -m setup
+  - ansible --version
+install:
+  - pwd
+  - sudo ln -s $TRAVIS_BUILD_DIR /etc/ansible/roles/$ANSIBLE_ROLE_NAME
+script:
+  - ansible-lint --force-color -v tests/test.yml
+  - ansible-playbook --become -D tests/test.yml -C -t all,debug
+  - ansible-playbook --become -D tests/test.yml    -t all,debug

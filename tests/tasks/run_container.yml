@@ -1,0 +1,20 @@
+# vim: set ft=yaml ts=2:
+---
+
+- name: create docker container
+  docker_container:
+    name: testnode
+    image: alpine
+    tty: true
+
+- name: create docker container a second time
+  docker_container:
+    name: testnode
+    image: alpine
+    tty: true
+  register: _docker_container
+
+- name: docker_container is idempotent
+  assert:
+    that:
+      - not _docker_container.changed

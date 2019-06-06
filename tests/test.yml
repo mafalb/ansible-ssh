@@ -1,0 +1,24 @@
+# vi: set ft=yaml ts=2:
+---
+
+- hosts: cihost
+
+  vars:
+    - docker_assume_already_installed: true
+
+  roles:
+    - role: mafalb.docker/daemon
+    - role: mafalb.docker/ansible
+    - role: mafalb.docker/tests
+
+  tasks:
+
+    - name: check LICENSE file
+      include_role:
+        name: ssh/tests
+        tasks_from: license
+
+    - name: check README file
+      include_role:
+        name: ssh/tests
+        tasks_from: readme

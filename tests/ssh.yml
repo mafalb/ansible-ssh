@@ -1,0 +1,23 @@
+# vim: set ft=yaml ts=2:
+---
+
+- hosts: cihost
+  roles:
+    - role: ansible_ci/node/docker
+      container_name: centos7
+      volumes: ansible_ci/node/docker
+      image_name: centos7
+      src: centos-7
+      member_of_groups:
+        - chrooted_sftp_group
+
+- name: test chrooted sftp
+  hosts: chrooted_sftp_group
+  vars:
+    ssh_sftp_chroot_group: chroot
+  roles:
+    - role: ssh/server
+    - role: ssh/sftp_user
+      user: test1
+
+...

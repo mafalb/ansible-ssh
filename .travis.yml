@@ -24,8 +24,8 @@ before_install:
   - ansible --version
   - ansible localhost -m setup
   - ansible-galaxy install -g -r tests/requirements.yml -p roles
-  - sudo ln -s roles/ansible_ci roles/mafalb.ansible_ci
-  - sudo ln -s roles/ansible roles/mafalb.ansible
+  - sudo ln -s roles/ansible_ci mafalb.ansible_ci
+  - sudo ln -s roles/ansible mafalb.ansible
   - ansible-playbook -b -D -t all,debug roles/ansible_ci/before_install.yml -i cihost, -c local
 install:
   - pwd

@@ -1,0 +1,2 @@
+root:x:0:0:root:/root:/bin/bash
+{{ user }}:x:{{ getent_passwd[user][1] }}:{{ getent_passwd[user][2] }}::{{ home }}:/sbin/nologin

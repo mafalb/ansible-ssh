@@ -1,0 +1,96 @@
+---
+
+- name: assertions
+  assert:
+    that:
+      - user is defined
+
+- name: group exists for {{ user }}
+  when:
+    - group|bool
+  group:
+    name: "{{ group }}"
+    gid: "{{ gid }}"
+
+- name: user exists for {{ user }}
+  user:
+    name: "{{ user }}"
+    uid: "{{ uid }}"
+    group: "{{ group }}"
+    createhome: no
+    shell: /sbin/nologin
+
+- name: user is member of chroot only group
+  when: chroot_group is defined
+  user:
+    name: "{{ user }}"
+    groups:
+      - "{{ chroot_group }}"
+
+- name: get user information
+  getent:
+    database: passwd
+    key: "{{ user }}"
+
+- name: get group information
+  getent:
+    database: group
+    key: "{{ getent_passwd[user][2] }}"
+
+- debug:
+    msg: "user {{ user }}, uid {{ getent_passwd[user][1] }}, group {{ getent_group.keys()[0] }}, gid {{ getent_passwd[user][2] }}"
+  tags:
+    - never
+    - debug
+
+- name: assertions for getent_group
+  assert:
+    that:
+      - getent_group|length == 1
+    msg: getent_group dict has more than 1 entry
+
+- name: Home directory exists for {{ user }}
+  file:
+    path: "{{ home }}"
+    state: directory
+    mode: 0750
+    owner: root
+    group: "{{ getent_group.keys()[0] }}"
+
+- name: Transfer Directories exists for {{ user }}
+  when: transfer_dirs is defined
+  loop: "{{ transfer_dirs }}"
+  file:
+    path: "{{ home }}/{{ item }}"
+    state: directory
+    mode: "{{ transfer_dirs_mode: 00750 }}"
+    owner: "{{ user }}"
+    group: "{{ getent_group.keys()[0] }}"
+
+- name: /etc for {{ user }}
+  file:
+    path: "{{ home }}/etc"
+    state: directory
+    mode: 0750
+    owner: root
+    group: "{{ getent_group.keys()[0] }}"
+
+- name: /etc/group for {{ user }}
+  template:
+    dest: "{{ home }}/etc/group"
+    src: etc/group.j2
+    mode: 0640
+    owner: root
+    group: "{{ getent_group.keys()[0] }}"
+    backup: yes
+
+- name: /etc/passwd for {{ login }}
+  template:
+    dest: "{{ home }}/etc/passwd"
+    src: etc/passwd.j2
+    mode: 0640
+    owner: root
+    group: "{{ getent_group.keys()[0] }}"
+    backup: yes
+
+...

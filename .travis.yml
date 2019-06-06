@@ -30,6 +30,9 @@ before_install:
 install:
   - pwd
   - sudo ln -s $TRAVIS_BUILD_DIR /etc/ansible/roles/$ANSIBLE_ROLE_NAME
+  - ls -lR /etc/ansible
+  - ls -lR .
+  - ls -lR ..
   - ansible-playbook -b -D -t all,debug roles/ansible_ci/install.yml
 script:
   - ansible-lint --force-color -v tests/test.yml

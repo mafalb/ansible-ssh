@@ -21,8 +21,10 @@ before_install:
   - sudo apt-get update
   - sudo apt-get install ansible && sudo mkdir -p /etc/ansible/roles
   - sudo echo -e "localhost ansible_connection=local\n" | sudo tee /etc/ansible/hosts
-  - ansible localhost -m setup
   - ansible --version
+  - ansible localhost -m setup
+  - ansible-galaxy install -g -r tests/requirements.yml -p roles
+  - ansible-playbook -b -D -t all,debug roles/mafalb.ansible_ci/before_install.yml -i cihost, -c local
 install:
   - pwd
   - sudo ln -s $TRAVIS_BUILD_DIR /etc/ansible/roles/$ANSIBLE_ROLE_NAME

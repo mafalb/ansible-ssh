@@ -1,0 +1,7 @@
+- name: ansible_ci
+  src: https://github.com/mafalb/ansible-ansible_ci
+  version: master
+
+- name: ansible
+  src: https://github.com/mafalb/ansible-ansible
+  version: master

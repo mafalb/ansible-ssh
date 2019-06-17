@@ -21,11 +21,11 @@
     shell: /sbin/nologin
 
 - name: user is member of chroot only group
-  when: chroot_group is defined
+  when: ssh_sftp_chroot_group is defined
   user:
     name: "{{ user }}"
     groups:
-      - "{{ chroot_group }}"
+      - "{{ ssh_sftp_chroot_group }}"
 
 - name: get user information
   getent:
@@ -57,13 +57,15 @@
     owner: root
     group: "{{ getent_group.keys()[0] }}"
 
-- name: Transfer Directories exists for {{ user }}
+- name: "Transfer Directories exists for {{ user }}"
   when: transfer_dirs is defined
   loop: "{{ transfer_dirs }}"
+  loop_control:
+    loop_var: transfer_dir
   file:
-    path: "{{ home }}/{{ item }}"
+    path: "{{ home }}/{{ transfer_dir }}"
     state: directory
-    mode: "{{ transfer_dirs_mode: 00750 }}"
+    mode: "{{ transfer_dirs_mode }}"
     owner: "{{ user }}"
     group: "{{ getent_group.keys()[0] }}"
 
@@ -84,7 +86,7 @@
     group: "{{ getent_group.keys()[0] }}"
     backup: yes
 
-- name: /etc/passwd for {{ login }}
+- name: /etc/passwd for {{ user }}
   template:
     dest: "{{ home }}/etc/passwd"
     src: etc/passwd.j2
